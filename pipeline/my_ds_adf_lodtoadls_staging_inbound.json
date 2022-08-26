@@ -80,41 +80,6 @@
 						}
 					]
 				}
-			},
-			{
-				"name": "List of LOD File Names",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "Source To Run",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "AzureSqlSource",
-						"sqlReaderQuery": {
-							"value": "SELECT Source,\nCountryId ,\nCountryCode,\nObjectName,\nLandingFileName \nFROM config.IngestionConfig\nWHERE Source = @{pipeline().parameters.Source}\nand CountryCode = @{pipeline().parameters.Country_Id}\n",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_sql_rdpcrm_azure_db",
-						"type": "DatasetReference"
-					}
-				}
 			}
 		],
 		"parameters": {
