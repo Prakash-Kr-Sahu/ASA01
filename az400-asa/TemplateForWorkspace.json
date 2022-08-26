@@ -7,21 +7,13 @@
 			"metadata": "Workspace name",
 			"defaultValue": "az400-asa"
 		},
-		"az400-asa-WorkspaceDefaultSqlServer_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'az400-asa-WorkspaceDefaultSqlServer'"
-		},
 		"LS_SQL_DB_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'LS_SQL_DB'"
 		},
-		"az400-asa-WorkspaceDefaultStorage_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://az400sagen201.dfs.core.windows.net"
-		},
-		"LS_SOURCE_ADOBE_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://az400adobegen2.dfs.core.windows.net/"
+		"az400-asa-WorkspaceDefaultSqlServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'az400-asa-WorkspaceDefaultSqlServer'"
 		},
 		"LS_ACQN_properties_typeProperties_url": {
 			"type": "string",
@@ -34,6 +26,14 @@
 		"LS_KV_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://az400-kv.vault.azure.net/"
+		},
+		"LS_SOURCE_ADOBE_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://az400adobegen2.dfs.core.windows.net/"
+		},
+		"az400-asa-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://az400sagen201.dfs.core.windows.net"
 		}
 	},
 	"variables": {
@@ -41,231 +41,28 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('workspaceName'), '/default')]",
-			"type": "Microsoft.Synapse/workspaces/managedVirtualNetworks",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
-			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"name": "[concat(parameters('workspaceName'), '/PIPE_02')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"type": "Managed",
-				"typeProperties": {
-					"computeProperties": {
-						"location": "AutoResolve",
-						"dataFlowProperties": {
-							"computeType": "General",
-							"coreCount": 8,
-							"timeToLive": 0
+				"activities": [
+					{
+						"name": "Wait1",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 1
 						}
 					}
-				}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
 			},
 			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/Adobe_Analytic_App')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LS_SOURCE_ADOBE",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"Source_Folder_name": {
-						"type": "string"
-					},
-					"Source_File_name": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().Source_File_name",
-							"type": "Expression"
-						},
-						"folderPath": {
-							"value": "@{concat('/sftp.uat.liaison.eu/inbox/adobe_cdh_uat/',dataset().Source_Folder_name)}",
-							"type": "Expression"
-						},
-						"fileSystem": "liason"
-					},
-					"columnDelimiter": ",",
-					"compressionCodec": "ZipDeflate",
-					"escapeChar": "\\",
-					"quoteChar": "\""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/LS_SOURCE_ADOBE')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/Adobe_Analytics_Metadata')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LS_SOURCE_ADOBE",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"Source_Folder_name": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"folderPath": {
-							"value": "@{concat('/sftp.uat.liaison.eu/inbox/adobe_cdh_uat/',dataset().Source_Folder_name)}",
-							"type": "Expression"
-						},
-						"fileSystem": "liason"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"quoteChar": "\""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/LS_SOURCE_ADOBE')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/cdh_acqn_gen2_adls')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LS_ACQN",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"Folderpath": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"folderPath": {
-							"value": "@dataset().Folderpath",
-							"type": "Expression"
-						},
-						"fileSystem": "cdh"
-					},
-					"columnDelimiter": ",",
-					"compressionCodec": "snappy",
-					"escapeChar": "\\",
-					"quoteChar": "\""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/LS_ACQN')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/LSGen2PrepCDHAdobe')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LS_ACQN",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"Destination_Folder_name": {
-						"type": "string"
-					},
-					"File_name": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().File_name",
-							"type": "Expression"
-						},
-						"folderPath": {
-							"value": "@{concat('LANDING/Staging/Adobe_Analytics/INBOUND/DE/',dataset().Destination_Folder_name)}",
-							"type": "Expression"
-						},
-						"fileSystem": "cdh"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"quoteChar": "\""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/LS_ACQN')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/ds_sql_rdpcrm_azure_db')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LS_SQL_DB",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "DataEngineering"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [],
-				"typeProperties": {}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/LS_SQL_DB')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/ds_sql_rdpcrm_reporting_db')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LS_SQL_DB",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "DataEngineering"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "CFW",
-					"table": "Curation_Extract"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/LS_SQL_DB')]"
-			]
 		},
 		{
 			"name": "[concat(parameters('workspaceName'), '/Test_Wait_Pipeline')]",
@@ -289,7 +86,7 @@
 					"cancelAfter": {}
 				},
 				"annotations": [],
-				"lastPublishTime": "2022-08-26T08:15:55Z"
+				"lastPublishTime": "2022-08-24T15:43:18Z"
 			},
 			"dependsOn": []
 		},
@@ -420,7 +217,7 @@
 					}
 				},
 				"annotations": [],
-				"lastPublishTime": "2022-08-26T08:16:10Z"
+				"lastPublishTime": "2022-08-22T14:57:38Z"
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/datasets/ds_sql_rdpcrm_azure_db')]",
@@ -428,65 +225,204 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/az400-asa-WorkspaceDefaultStorage')]",
-			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"name": "[concat(parameters('workspaceName'), '/Adobe_Analytic_App')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('az400-asa-WorkspaceDefaultStorage_properties_typeProperties_url')]"
+				"linkedServiceName": {
+					"referenceName": "LS_SOURCE_ADOBE",
+					"type": "LinkedServiceReference"
 				},
-				"connectVia": {
-					"referenceName": "AutoResolveIntegrationRuntime",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/az400-asa-WorkspaceDefaultSqlServer')]",
-			"type": "Microsoft.Synapse/workspaces/linkedServices",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
 				"parameters": {
-					"DBName": {
-						"type": "String"
+					"Source_Folder_name": {
+						"type": "string"
+					},
+					"Source_File_name": {
+						"type": "string"
 					}
 				},
 				"annotations": [],
-				"type": "AzureSqlDW",
+				"type": "DelimitedText",
 				"typeProperties": {
-					"connectionString": "[parameters('az400-asa-WorkspaceDefaultSqlServer_connectionString')]"
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().Source_File_name",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@{concat('/sftp.uat.liaison.eu/inbox/adobe_cdh_uat/',dataset().Source_Folder_name)}",
+							"type": "Expression"
+						},
+						"fileSystem": "liason"
+					},
+					"columnDelimiter": ",",
+					"compressionCodec": "ZipDeflate",
+					"escapeChar": "\\",
+					"quoteChar": "\""
 				},
-				"connectVia": {
-					"referenceName": "AutoResolveIntegrationRuntime",
-					"type": "IntegrationRuntimeReference"
-				}
+				"schema": []
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+				"[concat(variables('workspaceId'), '/linkedServices/LS_SOURCE_ADOBE')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/LS_SOURCE_ADOBE')]",
-			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"name": "[concat(parameters('workspaceName'), '/Adobe_Analytics_Metadata')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
 			"properties": {
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('LS_SOURCE_ADOBE_properties_typeProperties_url')]"
+				"linkedServiceName": {
+					"referenceName": "LS_SOURCE_ADOBE",
+					"type": "LinkedServiceReference"
 				},
-				"connectVia": {
-					"referenceName": "AutoResolveIntegrationRuntime",
-					"type": "IntegrationRuntimeReference"
+				"parameters": {
+					"Source_Folder_name": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "@{concat('/sftp.uat.liaison.eu/inbox/adobe_cdh_uat/',dataset().Source_Folder_name)}",
+							"type": "Expression"
+						},
+						"fileSystem": "liason"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/LS_SOURCE_ADOBE')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/LSGen2PrepCDHAdobe')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ACQN",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"Destination_Folder_name": {
+						"type": "string"
+					},
+					"File_name": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().File_name",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@{concat('LANDING/Staging/Adobe_Analytics/INBOUND/DE/',dataset().Destination_Folder_name)}",
+							"type": "Expression"
+						},
+						"fileSystem": "cdh"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/LS_ACQN')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/cdh_acqn_gen2_adls')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ACQN",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"Folderpath": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "@dataset().Folderpath",
+							"type": "Expression"
+						},
+						"fileSystem": "cdh"
+					},
+					"columnDelimiter": ",",
+					"compressionCodec": "snappy",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/LS_ACQN')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_sql_rdpcrm_azure_db')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_SQL_DB",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "DataEngineering"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/LS_SQL_DB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ds_sql_rdpcrm_reporting_db')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_SQL_DB",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "DataEngineering"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "CFW",
+					"table": "Curation_Extract"
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+				"[concat(variables('workspaceId'), '/linkedServices/LS_SQL_DB')]"
 			]
 		},
 		{
@@ -528,25 +464,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/LS_SQL_DB')]",
-			"type": "Microsoft.Synapse/workspaces/linkedServices",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": [],
-				"type": "AzureSqlDatabase",
-				"typeProperties": {
-					"connectionString": "[parameters('LS_SQL_DB_connectionString')]"
-				},
-				"connectVia": {
-					"referenceName": "AutoResolveIntegrationRuntime",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/LS_DBR')]",
 			"type": "Microsoft.Synapse/workspaces/linkedServices",
 			"apiVersion": "2019-06-01-preview",
@@ -577,6 +494,106 @@
 				"type": "AzureKeyVault",
 				"typeProperties": {
 					"baseUrl": "[parameters('LS_KV_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/LS_SOURCE_ADOBE')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('LS_SOURCE_ADOBE_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/LS_SQL_DB')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('LS_SQL_DB_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/az400-asa-WorkspaceDefaultSqlServer')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('az400-asa-WorkspaceDefaultSqlServer_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/az400-asa-WorkspaceDefaultStorage')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('az400-asa-WorkspaceDefaultStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 0
+						}
+					}
 				}
 			},
 			"dependsOn": []
