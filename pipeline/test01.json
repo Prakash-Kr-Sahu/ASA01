@@ -14,7 +14,18 @@
 					},
 					"cases": [
 						{
-							"value": "Adobe_Analytics"
+							"value": "Adobe_Analytics",
+							"activities": [
+								{
+									"name": "Wait1",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 5
+									}
+								}
+							]
 						},
 						{
 							"value": "SMG_VOC",
