@@ -1,0 +1,20 @@
+{
+	"name": "Test_Wait_Pipeline",
+	"properties": {
+		"description": "Test for CICD",
+		"activities": [
+			{
+				"name": "Wait1",
+				"type": "Wait",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 10
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2022-08-24T15:43:18Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}
